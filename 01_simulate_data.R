@@ -42,7 +42,7 @@ bernoulli <- function(p) {
 inject_na <- function(x, proportion) {
   if (!is.numeric(proportion) || length(proportion) != 1L ||
       proportion < 0 || proportion > 1) {
-    stop("proportion doit etre comprise entre 0 et 1")
+    stop("proportion must be between 0 and 1")
   }
   if (length(x) == 0L || proportion == 0) return(x)
   positions <- sample.int(length(x), size = round(length(x) * proportion))
@@ -370,15 +370,15 @@ utils::write.csv(country_calendar,
   row.names = FALSE, na = "")
 
 # --- 10. Quick check: fictional data only -------------------------------------
-cat("\n=== DONNEES SYNTHETIQUES : CONTROLES ===\n")
-cat("Patients generes : ", nrow(synthetic_patients), "\n", sep = "")
-cat("Pays : ", paste(sort(unique(country)), collapse = ", "), "\n", sep = "")
-cat("SARI-CD1 (avant exclusions) : ", sum(cd1_for_qc), "\n", sep = "")
-cat("SARI-CD2 (avant exclusions) : ", sum(cd2_for_qc), "\n", sep = "")
-cat("Sous-ensemble CD2 inclus dans CD1 : OUI\n")
-cat("\nResultats influenza (NA inclus) :\n")
+cat("\n=== SYNTHETIC DATA: CHECKS ===\n")
+cat("Patients generated: ", nrow(synthetic_patients), "\n", sep = "")
+cat("Countries: ", paste(sort(unique(country)), collapse = ", "), "\n", sep = "")
+cat("SARI-CD1 (before exclusions): ", sum(cd1_for_qc), "\n", sep = "")
+cat("SARI-CD2 (before exclusions): ", sum(cd2_for_qc), "\n", sep = "")
+cat("CD2 subset included in CD1: YES\n")
+cat("\nInfluenza results (including NA):\n")
 print(table(synthetic_patients$flu_result, useNA = "ifany"))
-cat("\nResultats SARS-CoV-2 (NA inclus) :\n")
+cat("\nSARS-CoV-2 results (including NA):\n")
 print(table(synthetic_patients$covid_result, useNA = "ifany"))
-cat("\nFichiers crees dans : ", normalizePath(output_dir), "\n", sep = "")
-cat("RAPPEL : simulation pedagogique, pas donnees ni VE reelles VEBIS.\n")
+cat("\nFiles created in: ", normalizePath(output_dir), "\n", sep = "")
+cat("REMINDER: educational simulation; not real VEBIS data or VE estimates.\n")
