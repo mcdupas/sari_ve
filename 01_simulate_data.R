@@ -1,30 +1,30 @@
 # ==============================================================================
 # 01_simulate_data.R
-# Projet d'entrainement R - VEBIS / test-negative design (TND)
+# R training project - VEBIS / test-negative design (TND)
 # ==============================================================================
-# OBJECTIF
-#   Creer une cohorte SYNTHETIQUE de patients hospitalises pour une affection
-#   respiratoire pendant la saison 2023/24. Les donnees serviront a pratiquer :
-#   - la reconstruction des definitions SARI-CD1 et SARI-CD2 ;
-#   - l'application de criteres d'eligibilite ;
-#   - les analyses d'efficacite vaccinale influenza / SARS-CoV-2 en TND.
+# OBJECTIVE
+#   Create a SYNTHETIC cohort of patients hospitalized for a respiratory
+#   illness during the 2023/24 season. The data will be used to practice:
+#   - reconstructing the SARI-CD1 and SARI-CD2 definitions;
+#   - applying eligibility criteria;
+#   - analyzing influenza / SARS-CoV-2 vaccine effectiveness using a TND.
 #
-# SOURCE METHODOLOGIQUE (PAS SOURCE DES DONNEES)
+# METHODOLOGICAL SOURCE (NOT THE SOURCE OF THE DATA)
 #   Marques et al., Vaccine (2026), doi:10.1016/j.vaccine.2026.129234,
-#   article et supplement (notamment figure 1, tableaux S1-S7).
+#   article and supplement (in particular, figure 1 and tables S1-S7).
 #
 # IMPORTANT
-#   100 % des observations sont fictives. Les probabilites, effets des vaccins,
-#   dates de campagnes, dates de predominance JN.1 et effets pays ci-dessous
-#   sont des choix pedagogiques et NE SONT PAS des estimations VEBIS.
-#   Les effectifs et VE publies ne sont pas vises et ne doivent pas etre cites
-#   comme des resultats retrouves avec ces donnees.
+#   100% of observations are fictional. The probabilities, vaccine effects,
+#   campaign dates, JN.1 predominance dates, and country effects below are
+#   pedagogical choices and are NOT VEBIS estimates.
+#   Published sample sizes and VE estimates are not targets and must not be
+#   cited as results obtained from these data.
 #
-# PREREQUIS : R >= 4.0, aucun package externe.
-# EXECUTION  : Rscript 01_simulate_data.R
-# SORTIES    : data/synthetic_vebis_patients.csv
-#              data/synthetic_vebis_patients.rds
-#              data/synthetic_country_calendar.csv
+# REQUIREMENTS: R >= 4.0, no external packages.
+# RUN         : Rscript 01_simulate_data.R
+# OUTPUTS     : data/synthetic_vebis_patients.csv
+#               data/synthetic_vebis_patients.rds
+#               data/synthetic_country_calendar.csv
 # ===============================================================================
 
 set.seed(20261123)
@@ -32,9 +32,9 @@ n_patients <- 16000L
 output_dir <- "data"
 dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 
-# --- Fonctions utilitaires ----------------------------------------------------
+# --- Utility functions --------------------------------------------------------
 bernoulli <- function(p) {
-  # Les probabilites sont bornees pour eviter les valeurs numeriques invalides.
+  # Bound probabilities to prevent invalid numeric values.
   p <- pmin(1, pmax(0, p))
   as.integer(stats::runif(length(p)) < p)
 }
@@ -50,8 +50,8 @@ inject_na <- function(x, proportion) {
   x
 }
 
-# --- 1. Calendriers et parametres pays : valeurs FICTIVES ----------------------
-# Les huit pays correspondent au schema initial de la figure 1 du papier.
+# --- 1. Country calendars and parameters: FICTIONAL values --------------------
+# The eight countries correspond to the initial layout in figure 1 of the paper.
 country_calendar <- data.frame(
   country = c("CZ", "ES", "HR", "HU", "IE", "LT", "PT", "RO"),
   flu_campaign_start = as.Date(c(
@@ -66,8 +66,8 @@ country_calendar <- data.frame(
     "2023-12-11", "2023-12-04", "2023-12-11", "2023-12-11",
     "2023-12-04", "2023-12-18", "2023-12-04", "2023-12-18"
   )),
-  # Seuils d'age simplifiés pour l'exercice, inspires du tableau S1 ;
-  # le script 02 pourra les utiliser pour generer ses propres indicateurs.
+  # Simplified age thresholds for the exercise, inspired by table S1;
+  # script 02 can use them to generate its own indicators.
   flu_priority_age = c(50L, 60L, 65L, 60L, 65L, 65L, 60L, 65L),
   covid_priority_age = c(50L, 60L, 65L, 60L, 50L, 65L, 60L, 18L),
   stringsAsFactors = FALSE
@@ -81,7 +81,7 @@ country <- sample(names(country_weight), size = n_patients,
                   replace = TRUE, prob = country_weight)
 country_index <- match(country, country_calendar$country)
 
-# --- 2. Demographie et comorbidites -------------------------------------------
+# --- 2. Demographics and comorbidities ----------------------------------------
 patient_id <- sprintf("SYN%06d", seq_len(n_patients))
 
 age_group_generated <- sample(
@@ -105,7 +105,7 @@ lung_disease <- bernoulli(plogis(-1.25 + 0.017 * (age - 65)))
 asthma <- bernoulli(plogis(-2.05 + 0.005 * (age - 65)))
 immunodeficiency <- bernoulli(plogis(-2.55 + 0.010 * (age - 65)))
 
-# Indicateur interne, a recalculer dans le script 02 avec les colonnes brutes.
+# Internal indicator, to be recalculated in script 02 from the raw columns.
 any_chronic <- as.integer(diabetes == 1L | heart_disease == 1L |
                           lung_disease == 1L | asthma == 1L |
                           immunodeficiency == 1L)
@@ -114,8 +114,8 @@ long_term_care <- bernoulli(plogis(-4.0 + 0.045 * (age - 65)))
 healthcare_worker <- bernoulli(ifelse(age < 65, 0.035, 0.004))
 vaccine_contraindication <- bernoulli(rep(0.002, n_patients))
 
-# --- 3. Dates de debut des symptomes et hospitalisation ------------------------
-# Pic hivernal fictif, sans tentative de reproduire exactement la figure 2.
+# --- 3. Symptom onset and hospitalization dates -------------------------------
+# Fictional winter peak, without attempting to reproduce figure 2 exactly.
 possible_onsets <- seq(as.Date("2023-10-01"), as.Date("2024-05-19"), by = "day")
 relative_days <- as.numeric(possible_onsets - as.Date("2023-10-01"))
 onset_weights <- (0.35 +
@@ -124,8 +124,8 @@ onset_weights <- (0.35 +
 onset_date <- sample(possible_onsets, size = n_patients,
                      replace = TRUE, prob = onset_weights)
 
-# La plupart des hospitalisations surviennent rapidement ; quelques observations
-# ont des dates incompatibles ou tardives pour exercer les filtres d'exclusion.
+# Most hospitalizations occur soon after symptom onset; a few observations have
+# incompatible or late dates to exercise the exclusion filters.
 onset_to_admission_days <- sample(
   -2:19, n_patients, replace = TRUE,
   prob = c(1, 1, 20, 21, 18, 13, 10, 8, 6, 5, 4, 3,
@@ -133,20 +133,20 @@ onset_to_admission_days <- sample(
 )
 admission_date <- onset_date + onset_to_admission_days
 
-# Le prelevement a lieu le plus souvent autour de l'admission.
+# Specimen collection most often takes place around admission.
 swab_offset_from_admission <- sample(
   -3:4, n_patients, replace = TRUE,
   prob = c(1, 4, 12, 40, 23, 11, 6, 3)
 )
 swab_date <- admission_date + swab_offset_from_admission
 
-# Quelques hospitalisations <24 h et des issues cliniques simulées.
+# Some hospital stays are <24 h, with simulated clinical outcomes.
 hospital_stay_hours <- pmax(6L, round(24 * (1 + stats::rpois(n_patients, 3))))
 short_stay <- bernoulli(rep(0.04, n_patients)) == 1L
 hospital_stay_hours[short_stay] <- sample(6:23, sum(short_stay), replace = TRUE)
 
-# --- 4. Vaccination : comportements correles influenza / COVID -----------------
-# La propension latente cree une correlation de comportement vaccinal.
+# --- 4. Vaccination: correlated influenza / COVID behaviors -------------------
+# The latent propensity creates a correlation in vaccination behavior.
 healthcare_propensity <- stats::rnorm(n_patients)
 
 p_flu_uptake <- plogis(
@@ -169,7 +169,7 @@ flu_planned_date <- flu_campaign_for_patient +
 covid_planned_date <- covid_campaign_for_patient +
   round(pmax(0, pmin(145, stats::rnorm(n_patients, mean = 24, sd = 24))))
 
-# Aucune date de vaccination future apres l'hospitalisation n'est inscrite.
+# No vaccination date after hospitalization is recorded.
 flu_vaccination_date <- flu_planned_date
 flu_vaccination_date[!will_get_flu_vaccine |
                        flu_planned_date > admission_date] <- as.Date(NA_character_)
@@ -180,13 +180,13 @@ covid_vaccination_date[!will_get_covid_vaccine |
 flu_vaccinated_2023_24 <- as.integer(!is.na(flu_vaccination_date))
 covid_vaccinated_2023_24 <- as.integer(!is.na(covid_vaccination_date))
 
-# Variables internes non exportees : au moins 14 jours AVANT le debut des symptomes.
+# Internal, non-exported variables: at least 14 days BEFORE symptom onset.
 flu_days_since_vax <- as.numeric(onset_date - flu_vaccination_date)
 covid_days_since_vax <- as.numeric(onset_date - covid_vaccination_date)
 flu_protected <- !is.na(flu_days_since_vax) & flu_days_since_vax >= 14
 covid_protected <- !is.na(covid_days_since_vax) & covid_days_since_vax >= 14
 
-# Categorie de produit vaccinal (optionnelle pour analyses descriptives).
+# Vaccine product category (optional for descriptive analyses).
 flu_vaccine_product <- rep(NA_character_, n_patients)
 flu_vaccine_product[flu_vaccinated_2023_24 == 1L] <- sample(
   c("Standard", "High-dose", "Adjuvanted", "Cell-based"),
@@ -200,17 +200,17 @@ covid_vaccine_product[covid_vaccinated_2023_24 == 1L] <- sample(
   prob = c(0.84, 0.01, 0.15)
 )
 
-# Deux indicateurs fictifs additionnels permettent de s'exercer aux exclusions
-# specifiques COVID-19 presentees dans la figure 1.
+# Two additional fictional indicators allow practice with the COVID-19-specific
+# exclusions shown in figure 1.
 covid_prior_dose_within_180d <- bernoulli(rep(0.015, n_patients))
 covid_vaccine_authorised <- rep(1L, n_patients)
 not_authorised <- covid_vaccinated_2023_24 == 1L &
   bernoulli(rep(0.006, n_patients)) == 1L
 covid_vaccine_authorised[not_authorised] <- 0L
 
-# --- 5. Etiologie virologique dependante du temps et de la vaccination ---------
-# Hypothese generatrice : efficacite protectrice moderee, possiblement moindre
-# a >=120 jours. Elle est entierement SYNTHETIQUE et n'est pas celle du papier.
+# --- 5. Time- and vaccination-dependent viral etiology ------------------------
+# Generating assumption: moderate protective effectiveness, possibly lower
+# at >=120 days. This is entirely SYNTHETIC and is not the estimate in the paper.
 day_number <- as.numeric(onset_date - as.Date("2023-10-01"))
 wave_h1 <- exp(-0.5 * ((day_number - 86) / 36)^2)
 wave_h3 <- exp(-0.5 * ((day_number - 112) / 34)^2)
@@ -231,7 +231,7 @@ p_h3 <- (0.024 + 0.075 * wave_h3) * flu_risk_multiplier *
 p_flu_b <- rep(0.009, n_patients)
 p_flu_unsubtyped <- rep(0.020, n_patients)
 
-# Tirage exclusif des sous-types influenza (une seule categorie par patient).
+# Exclusive draw of influenza subtypes (one category per patient).
 flu_draw <- stats::runif(n_patients)
 flu_result <- rep("Negative", n_patients)
 flu_result[flu_draw < p_h1] <- "A(H1N1)pdm09"
@@ -245,10 +245,10 @@ p_covid <- pmin(0.90, (0.035 + 0.130 * wave_covid) *
                   covid_risk_multiplier * country_infection_factor)
 covid_result <- ifelse(bernoulli(p_covid) == 1L, "Positive", "Negative")
 
-# --- 6. Symptomes : dependance a l'infection ET a la vaccination --------------
-# Conditionner les symptomes a l'infection permet d'explorer la selection
-# potentielle produite par SARI-CD2. Un effet d'attenuation symptomatique
-# chez les vaccines infectes est ajoute UNIQUEMENT pour la simulation.
+# --- 6. Symptoms: dependent on infection AND vaccination ----------------------
+# Conditioning symptoms on infection allows exploration of potential selection
+# caused by SARI-CD2. A symptom-attenuation effect in vaccinated infected
+# patients is added ONLY for the simulation.
 influenza_positive <- flu_result != "Negative"
 respiratory_positive <- influenza_positive | covid_result == "Positive"
 attenuation <- as.numeric((influenza_positive & flu_protected) |
@@ -271,13 +271,13 @@ anosmia <- bernoulli(p_anosmia)
 ageusia <- bernoulli(p_ageusia)
 dysgeusia <- bernoulli(p_dysgeusia)
 
-# Ne pas exporter SARI-CD1/CD2 : le script 02 sera l'occasion de les creer.
+# Do not export SARI-CD1/CD2: script 02 will be used to create them.
 cd1_for_qc <- fever == 1L | cough == 1L | dyspnea == 1L |
   anosmia == 1L | ageusia == 1L | dysgeusia == 1L
 cd2_for_qc <- fever == 1L & cough == 1L
 stopifnot(all(!cd2_for_qc | cd1_for_qc))
 
-# --- 7. Issues cliniques (descriptif, pas outcomes TND) -------------------------
+# --- 7. Clinical outcomes (descriptive, not TND outcomes) ---------------------
 p_icu <- plogis(-3.55 + 0.35 * respiratory_positive +
                   0.015 * (age - 65) + 0.15 * any_chronic)
 icu_admission <- bernoulli(p_icu)
@@ -285,9 +285,9 @@ p_death <- plogis(-3.20 + 0.025 * (age - 65) +
                     0.50 * icu_admission + 0.13 * any_chronic)
 in_hospital_death <- bernoulli(p_death)
 
-# --- 8. Introduire un peu de donnees manquantes -------------------------------
-# Appliquer les NA APRES la generation des relations causales permet de
-# conserver des simulations coherentes tout en testant le nettoyage.
+# --- 8. Introduce some missing data -------------------------------------------
+# Applying NAs AFTER generating the causal relationships preserves coherent
+# simulations while still allowing data-cleaning procedures to be tested.
 age <- inject_na(age, 0.003)
 sex <- inject_na(sex, 0.003)
 onset_date <- inject_na(onset_date, 0.008)
@@ -302,7 +302,7 @@ immunodeficiency <- inject_na(immunodeficiency, 0.010)
 flu_vaccinated_2023_24 <- inject_na(flu_vaccinated_2023_24, 0.012)
 covid_vaccinated_2023_24 <- inject_na(covid_vaccinated_2023_24, 0.014)
 
-# Certaines personnes vaccines avec statut connu ont une date manquante.
+# Some people known to be vaccinated have a missing vaccination date.
 flu_known_vaccinated <- which(!is.na(flu_vaccinated_2023_24) &
                                flu_vaccinated_2023_24 == 1L)
 covid_known_vaccinated <- which(!is.na(covid_vaccinated_2023_24) &
@@ -312,7 +312,7 @@ flu_vaccination_date[sample(flu_known_vaccinated,
 covid_vaccination_date[sample(covid_known_vaccinated,
   size = round(length(covid_known_vaccinated) * 0.015))] <- as.Date(NA_character_)
 
-# --- 9. Export des donnees brutes synthetiques --------------------------------
+# --- 9. Export the raw synthetic data -----------------------------------------
 synthetic_patients <- data.frame(
   patient_id = patient_id,
   country = country,
@@ -369,7 +369,7 @@ utils::write.csv(country_calendar,
   file.path(output_dir, "synthetic_country_calendar.csv"),
   row.names = FALSE, na = "")
 
-# --- 10. Controle rapide : uniquement sur donnees fictives --------------------
+# --- 10. Quick check: fictional data only -------------------------------------
 cat("\n=== DONNEES SYNTHETIQUES : CONTROLES ===\n")
 cat("Patients generes : ", nrow(synthetic_patients), "\n", sep = "")
 cat("Pays : ", paste(sort(unique(country)), collapse = ", "), "\n", sep = "")
