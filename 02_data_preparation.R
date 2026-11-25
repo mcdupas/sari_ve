@@ -1,5 +1,5 @@
 # =============================================================================
-# 02_data_preparation_H1N1_dplyr.R
+# 02_data_preparation_H1N1.R
 # VEBIS training project - influenza A(H1N1)pdm09 (synthetic data)
 # ==============================================================================
 
