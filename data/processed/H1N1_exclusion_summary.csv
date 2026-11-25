@@ -1,0 +1,12 @@
+"step","excluded","remaining"
+"SARI-CD1 eligibility",1708,14292
+"Missing influenza test result",646,13646
+"Missing key covariates",NA,NA
+"Swab date > 7 days after onset date",NA,NA
+"Hospital admission > 14 days after onset date",NA,NA
+"Onset date after swab date",NA,NA
+"Flu vaccination date 1-13 days before onset date",NA,NA
+"Patients older than 64 years",NA,NA
+"Residents of long-term care facilities (LTCF)",NA,NA
+"Healthcare workers",NA,NA
+"Patients contraindicated for flu vaccination",NA,NA
