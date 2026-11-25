@@ -3,12 +3,13 @@
 # VEBIS training project - influenza A(H1N1)pdm09 (synthetic data)
 # ==============================================================================
 
+# Country-specific analysis periods were not applied; data are synthetic
+
+
 library(dplyr)
 
 # 1. Import data ---------------------------------------------------------------
 patients <- readRDS("data/synthetic_vebis_patients.rds")
-calendar <- read.csv("data/synthetic_country_calendar.csv") %>%
-  mutate(flu_campaign_start = as.Date(flu_campaign_start))
 
 dir.create("data/processed", showWarnings = FALSE, recursive = TRUE)
 
@@ -120,8 +121,6 @@ h1n1 <- filter_step(
   "Study period",
   h1n1$data$onset_date <= as.Date("2024-05-19")
 )
-
-# Country-specific analysis periods were not applied; data are synthetic
 
 
 
