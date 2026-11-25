@@ -1,12 +1,22 @@
-"step","excluded","remaining"
-"SARI-CD1 eligibility",1708,14292
-"Missing influenza test result",646,13646
-"Missing key covariates",NA,NA
-"Swab date > 7 days after onset date",NA,NA
-"Hospital admission > 14 days after onset date",NA,NA
-"Onset date after swab date",NA,NA
-"Flu vaccination date 1-13 days before onset date",NA,NA
-"Patients older than 64 years",NA,NA
-"Residents of long-term care facilities (LTCF)",NA,NA
-"Healthcare workers",NA,NA
-"Patients contraindicated for flu vaccination",NA,NA
+"step","excluded","remaining","definition"
+"SARI_CD1",1708,14292,"CD1"
+"Influenza test available",646,13646,"CD1"
+"Missing key variables",1285,12361,"CD1"
+"Swab within 7 days of onset",3106,9255,"CD1"
+"Admission within 14 days of onset",0,9255,"CD1"
+"Eligible population",2602,6653,"CD1"
+"Vaccination 1-13 days before onset",217,6436,"CD1"
+"H1N1 cases and controls",570,5866,"CD1"
+"Study period",0,5866,"CD1"
+"Countries with >=5 cases and controls",0,5866,"CD1"
+"SARI_CD1",1708,14292,"CD2"
+"Influenza test available",646,13646,"CD2"
+"Missing key variables",1285,12361,"CD2"
+"Swab within 7 days of onset",3106,9255,"CD2"
+"Admission within 14 days of onset",0,9255,"CD2"
+"Eligible population",2602,6653,"CD2"
+"Vaccination 1-13 days before onset",217,6436,"CD2"
+"H1N1 cases and controls",570,5866,"CD2"
+"Study period",0,5866,"CD2"
+"SARI-CD2",3517,2349,"CD2"
+"Countries with >=5 cases and controls",0,2349,"CD2"

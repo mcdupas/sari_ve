@@ -155,8 +155,8 @@ saveRDS(h1n1_cd1$data, "data/processed/H1N1_CD1.rds")
 saveRDS(h1n1_cd2$data, "data/processed/H1N1_CD2.rds")
 
 exclusion_summary <- bind_rows(
-  mutate(h1n1_cd1$flow, definition = "CD1"),
-  mutate(h1n1_cd2$flow, definition = "CD2")
+  mutate(h1n1_cd1$exclusions, definition = "CD1"),
+  mutate(h1n1_cd2$exclusions, definition = "CD2")
 )
 write.csv(exclusion_summary, "data/processed/H1N1_exclusion_summary.csv",
           row.names = FALSE)
